@@ -35,34 +35,51 @@ import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.RunnerException;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 @Fork(1)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 public class Main {
 
   public static void main(String[] args) throws IOException, RunnerException {
-//    System.out.println(new RecursionTester(new CountedThreadedExecutor(1000)).testSum(10000));
-
     org.openjdk.jmh.Main.main(args);
   }
 
   @State(Scope.Benchmark)
-  public static class BenchPlan {
+  public static class InterruptionsPlan {
     @Param({"10", "100", "1000"}) public int interruptions;
   }
 
-  @Benchmark
-  public void testCountedExecutor(BenchPlan plan) {
-    new RecursionTester(new CountedThreadedExecutor(plan.interruptions)).testSum(10000);
+  @State(Scope.Benchmark)
+  public static class InputSizePlan {
+    @Param({"100", "1000", "10000", "50000", "100000", "1000000"}) public int inputSize;
   }
 
+//  @Benchmark
+//  public void testCountedExecutor(BenchPlan plan) {
+//    new RecursionTester(new CountedThreadedExecutor(plan.interruptions)).testSum(10000);
+//  }
+
   @Benchmark
-  public void testSOExecutor() {
-    new RecursionTester(new SOThreadedExecutor()).testSum(10000);
+  public void testCPS(InputSizePlan plan) {
+    new CpsTester().run(plan.inputSize);
   }
 
+//  @Benchmark
+//  public void testSOExecutor(InputSizePlan plan) {
+//    new RecursionTester(new SOThreadedExecutor()).testSum(plan.inputSize);
+//  }
+//
+//  @Benchmark
+//  public void testEmptyThread() {
+//    Thread thread = new Thread(() -> {});
+//    thread.start();
+//    try {
+//      thread.join();
+//    } catch (InterruptedException e) {
+//      e.printStackTrace();
+//    }
+//  }
 
-  @Benchmark
-  public void testBigSOExecutor() {
-    new RecursionTester(new SOThreadedExecutor()).testSum(1000000);
-  }
 }
