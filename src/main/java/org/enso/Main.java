@@ -57,8 +57,19 @@ public class Main {
   }
 
 //  @Benchmark
-//  public void testCountedExecutor(BenchPlan plan) {
-//    new RecursionTester(new CountedThreadedExecutor(plan.interruptions)).testSum(10000);
+//  public void testCountedExecutor(InputSizePlan plan) {
+//    new RecursionTester(new CountedThreadedExecutor(2000)).testSum(plan.inputSize);
+//  }
+
+//  @Benchmark
+//  public long basicLoopBench(InputSizePlan plan) {
+//    long counter = 0;
+//
+//    for (int i = 0; i < plan.inputSize; ++i) {
+//      counter += i;
+//    }
+//
+//    return counter;
 //  }
 
   @Benchmark
@@ -66,15 +77,55 @@ public class Main {
     new CpsTester().run(plan.inputSize);
   }
 
+  @Benchmark
+  public long testHybrid(InputSizePlan plan) {
+    return hybridRecurse(plan.inputSize);
+  }
+
+  public long hybridRecurse(long input) {
+    try {
+      if (input == 0) {
+        return 0L;
+      }
+      else {
+        return input + hybridRecurse(input - 1);
+      }
+    } catch (StackOverflowError e) {
+      return input + new CpsTester().run(input - 1);
+    }
+  }
+
 //  @Benchmark
 //  public void testSOExecutor(InputSizePlan plan) {
 //    new RecursionTester(new SOThreadedExecutor()).testSum(plan.inputSize);
 //  }
-//
+
 //  @Benchmark
 //  public void testEmptyThread() {
 //    Thread thread = new Thread(() -> {});
 //    thread.start();
+//    try {
+//      thread.join();
+//    } catch (InterruptedException e) {
+//      e.printStackTrace();
+//    }
+//  }
+
+//  @State(Scope.Benchmark)
+//  public static class NumThreadsPlan {
+//    @Param({"100", "1000", "10000"}) public int numThreads;
+//  }
+//
+//  @Benchmark
+//  public int testChainThreads(NumThreadsPlan plan){
+//    Thread thread = new Thread(() -> spawnThread(plan.numThreads - 1));
+//    return 0;
+//  }
+//
+//  public void spawnThread(int numThreads) {
+//    Thread thread = new Thread(() -> spawnThread(numThreads - 1));
+//    thread.start();
+//
 //    try {
 //      thread.join();
 //    } catch (InterruptedException e) {
